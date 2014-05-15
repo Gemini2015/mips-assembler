@@ -2,10 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <stdint.h>
-#include <unistd.h>
+//#include <stdint.h>
+#include "unistd.h"
 #include "file_parser.h"
 #include "tokenizer.h"
+
+extern int search(char *instruction);
 
 /*
  * The structs below map a character to an integer.
@@ -91,6 +93,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 	int32_t line_num = 1;
 	int32_t instruction_count = 0x00000000;
 	int data_reached = 0;
+	int i;
 	//FILE *fptr;
 
 	/*fptr = fopen(src_file, "r");
@@ -120,7 +123,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 			/* blank line or comment begins here. go to the next line */
 			if (token == NULL || *token == '#') {
 				line_num++;
-				free(token);
+				if(token != NULL) free(token);
 				break;
 			}
 
@@ -313,14 +316,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rd, rs, rt respectively
 								char **reg_store;
-								reg_store = malloc(3 * sizeof(char*));
+								reg_store = (char**)malloc(3 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 3; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 3; i++) {
+									reg_store[i] = (char*)malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -347,7 +350,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								rtype_instruction(token, reg_store[1], reg_store[2], reg_store[0], 0, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 3; i++) {
+								for (i = 0; i < 3; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -362,14 +365,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rd, rs and shamt
 								char **reg_store;
-								reg_store = malloc(3 * sizeof(char*));
+								reg_store = (char**)malloc(3 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 3; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 3; i++) {
+									reg_store[i] = (char*)malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -396,7 +399,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								rtype_instruction(token, "00000", reg_store[1], reg_store[0], atoi(reg_store[2]), Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 3; i++) {
+								for (i = 0; i < 3; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -426,14 +429,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rd, rs and shamt
 								char **reg_store;
-								reg_store = malloc(2 * sizeof(char*));
+								reg_store = (char**)malloc(2 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 2; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 2; i++) {
+									reg_store[i] = (char*)malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -459,7 +462,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								// The register is at reg_store[0] and the variable is at reg_store[1]
 
 								// Find address of label in hash table
-								int *address = hash_find(hash_table, reg_store[1], strlen(reg_store[1])+1);
+								int *address = (int*)hash_find(hash_table, reg_store[1], strlen(reg_store[1])+1);
 
 								// Convert address to binary in char*
 								char addressBinary[33];
@@ -469,7 +472,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								char upperBits[16];
 								char lowerBits[16];
 
-								for (int i = 0; i < 32; i++) {
+								for (i = 0; i < 32; i++) {
 									if (i < 16)
 										lowerBits[i] = addressBinary[i];
 									else
@@ -487,7 +490,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								itype_instruction("ori", reg_store[0], reg_store[0], immediate, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 2; i++) {
+								for (i = 0; i < 2; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -502,14 +505,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								//
 								// Create an array of char* that stores rd, rs, rt respectively
 								char **reg_store;
-								reg_store = malloc(3 * sizeof(char*));
+								reg_store =(char**) malloc(3 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 3; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 3; i++) {
+									reg_store[i] =(char*) malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -536,7 +539,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								itype_instruction(token, reg_store[2], reg_store[0], immediate, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 3; i++) {
+								for (i = 0; i < 3; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -552,14 +555,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rt, rs
 								char **reg_store;
-								reg_store = malloc(3 * sizeof(char*));
+								reg_store =(char**) malloc(3 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 3; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 3; i++) {
+									reg_store[i] =(char*) malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -586,7 +589,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								itype_instruction(token, reg_store[1], reg_store[0], immediate, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 3; i++) {
+								for ( i = 0; i < 3; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -601,14 +604,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rs, rt
 								char **reg_store;
-								reg_store = malloc(2 * sizeof(char*));
+								reg_store =(char**) malloc(2 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 2; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 2; i++) {
+									reg_store[i] =(char*) malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -636,7 +639,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								itype_instruction(token, "00000", reg_store[0], immediate, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 3; i++) {
+								for (i = 0; i < 2; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -651,14 +654,14 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 
 								// Create an array of char* that stores rs, rt
 								char **reg_store;
-								reg_store = malloc(2 * sizeof(char*));
+								reg_store =(char**) malloc(2 * sizeof(char*));
 								if (reg_store == NULL) {
 									fprintf(Out, "Out of memory\n");
 									exit(1);
 								}
 
-								for (int i = 0; i < 2; i++) {
-									reg_store[i] = malloc(2 * sizeof(char));
+								for (i = 0; i < 2; i++) {
+									reg_store[i] =(char*) malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -686,7 +689,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								reg = parse_token(inst_ptr, " $,\n\t", &inst_ptr, NULL);
 
 								// Find hash address for a register and put in an immediate
-								int *address = hash_find(hash_table, reg, strlen(reg)+1);
+								int *address =(int*) hash_find(hash_table, reg, strlen(reg)+1);
 								
 								int immediate = *address + instruction_count;
 
@@ -694,7 +697,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								itype_instruction(token, reg_store[0], reg_store[1], immediate, Out);
 
 								// Dealloc reg_store
-								for (int i = 0; i < 2; i++) {
+								for (i = 0; i < 2; i++) {
 									free(reg_store[i]);
 								}
 								free(reg_store);
@@ -712,15 +715,15 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 							if (comment != NULL) {							
 
 								int str_len_count = 0;
-								for (int i = 0; i < strlen(inst_ptr); i++) {
+								for (i = 0; i < strlen(inst_ptr); i++) {
 									if (inst_ptr[i] != ' ')
 										str_len_count++;
 									else
 										break;
 								}
 
-								char new_label[str_len_count+1];
-								for (int i = 0; i < str_len_count; i++)
+								char *new_label =(char*)malloc((str_len_count+1)*sizeof(char)); //new char[str_len_count+1];
+								for (i = 0; i < str_len_count; i++)
 									new_label[i] = inst_ptr[i];
 								new_label[str_len_count] = '\0';
 
@@ -732,7 +735,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 							}
 
 							// Find hash address for a label and put in an immediate
-							int *address = hash_find(hash_table, inst_ptr, strlen(inst_ptr)+1);
+							int *address =(int*) hash_find(hash_table, inst_ptr, strlen(inst_ptr)+1);
 							
 							// Send to jtype function
 							jtype_instruction(token, *address, Out);
@@ -768,7 +771,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 							sscanf(var_tok, "%*s %d", &var_value);
 
 							// Value var_value is repeated freq times. Send to binary rep function
-							for (int i = 0; i < freq; i++) {
+							for (i = 0; i < freq; i++) {
 								word_rep(var_value, Out);
 							}
 						}
@@ -979,6 +982,7 @@ void word_rep(int binary_rep, FILE *Out) {
 // Write out the ascii string
 void ascii_rep(char string[], FILE *Out) {
 
+	int i;
 	// Separate the string, and put each four characters in an element of an array of strings
 	size_t str_length = strlen(string);
 	str_length++;
@@ -991,14 +995,14 @@ void ascii_rep(char string[], FILE *Out) {
 
 	// Create an array of strings which separates each 4-char string
 	char **sep_str;
-	sep_str = malloc(num_strs * sizeof(char*));
+	sep_str =(char**) malloc(num_strs * sizeof(char*));
 	if (sep_str == NULL) {
 		fprintf(Out, "Out of memory\n");
 		exit(1);
 	}
 
-	for (int i = 0; i < num_strs; i++) {
-		sep_str[i] = malloc(4 * sizeof(char));
+	for (i = 0; i < num_strs; i++) {
+		sep_str[i] =(char*) malloc(4 * sizeof(char));
 		if (sep_str[i] == NULL) {
 			fprintf(Out, "Out of memory\n");
 			exit(1);
@@ -1006,7 +1010,7 @@ void ascii_rep(char string[], FILE *Out) {
 	}
 
 	int count = 0;
-	for (int i = 0; i < str_length; i++) {
+	for ( i = 0; i < str_length; i++) {
 		sep_str[i / 4][i % 4] = *ptr;
 		ptr++;
 		count++;
@@ -1015,7 +1019,7 @@ void ascii_rep(char string[], FILE *Out) {
 	// Reverse each element in the array
 	char temp;
 
-	for (int i = 0; i < num_strs; i++) {
+	for (i = 0; i < num_strs; i++) {
 
 		for (int j = 0, k = 3; j < k; j++, k--) {
 
@@ -1026,7 +1030,7 @@ void ascii_rep(char string[], FILE *Out) {
 	}
 
 	// Convert into binary
-	for (int i = 0; i < num_strs; i++) {
+	for (i = 0; i < num_strs; i++) {
 
 		for (int j = 0; j < 4; j++) {
 			char c = sep_str[i][j];
@@ -1039,7 +1043,7 @@ void ascii_rep(char string[], FILE *Out) {
 	}
 
 	// Deallocate sep_str
-	for (int i = 0; i < num_strs; i++) {
+	for ( i = 0; i < num_strs; i++) {
 		free(sep_str[i]);
 	}
 	free(sep_str);

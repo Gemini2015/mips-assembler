@@ -4,12 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <semaphore.h>
-#include <stdint.h>
+//#include <semaphore.h>
+//#include <stdint.h>
 #include "hash_function.h"
 
 #define TRUE 1
 #define FALSE 0
+
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
+
 
 typedef struct hash_entry_type
 {
@@ -103,7 +107,7 @@ static inline int32_t hash_insert( hash_table_t *hash_table, void *key, uint32_t
   
   hash_table_size = hash_table->size;
 
-  hash_key  = hash(key, key_len, 7) % hash_table_size;
+  hash_key  = hash((unsigned char *)key, key_len, 7) % hash_table_size;
 
 #ifdef __USE_HASH_LOCKS__
   sem_wait(&hash_table->row_lock[hash_key]);
@@ -158,7 +162,7 @@ static inline int32_t hash_insert( hash_table_t *hash_table, void *key, uint32_t
    returns:
    TRUE: if key was successfully deleted  
    FALSE: if key could not be deleted (key was not found)
-				  
+          
 */
 static inline int32_t hash_delete( hash_table_t *hash_table, void *key, uint32_t key_len)
 {
@@ -167,7 +171,7 @@ static inline int32_t hash_delete( hash_table_t *hash_table, void *key, uint32_t
   
   hash_table_size = hash_table->size;
   
-  hash_key  = hash(key, key_len, 7) % hash_table_size;
+  hash_key  = hash((unsigned char *)key, key_len, 7) % hash_table_size;
  
 #ifdef __USE_HASH_LOCKS__
   sem_wait(&(hash_table->row_lock[hash_key]));
@@ -179,21 +183,21 @@ static inline int32_t hash_delete( hash_table_t *hash_table, void *key, uint32_t
   while (ptr != NULL)
     {
       if (memcmp(ptr->key, key, key_len) == 0)
-	{
-	  if (prev_ptr == NULL) // First entry
-	    hash_table->row[hash_key] = ptr->next;
-	  else
-	    prev_ptr->next = ptr->next;
-	  
-	  if (ptr->next == NULL) hash_table->tail[hash_key] = prev_ptr;
-	  
-	  free(ptr->key);
-	  free(ptr);
+  {
+    if (prev_ptr == NULL) // First entry
+      hash_table->row[hash_key] = ptr->next;
+    else
+      prev_ptr->next = ptr->next;
+    
+    if (ptr->next == NULL) hash_table->tail[hash_key] = prev_ptr;
+    
+    free(ptr->key);
+    free(ptr);
 #ifdef __USE_HASH_LOCKS__
-	  sem_post(&hash_table->row_lock[hash_key]);
+    sem_post(&hash_table->row_lock[hash_key]);
 #endif
-	  return(TRUE);
-	}
+    return(TRUE);
+  }
       prev_ptr = ptr;
       ptr = ptr->next;
     }
@@ -226,7 +230,7 @@ static inline void *hash_find( hash_table_t *hash_table, void *key, uint32_t key
 
   hash_table_size = hash_table->size;
 
-  hash_key  = hash(key, key_len, 7) % hash_table_size;
+  hash_key  = hash((unsigned char *)key, key_len, 7) % hash_table_size;
 
 #ifdef __USE_HASH_LOCKS__
   sem_wait(&hash_table->row_lock[hash_key]);
@@ -236,12 +240,12 @@ static inline void *hash_find( hash_table_t *hash_table, void *key, uint32_t key
   while (ptr != NULL)
     {
       if ((key_len == ptr->key_len) && (memcmp(ptr->key, key, key_len) == 0))
-	{
+  {
 #ifdef __USE_HASH_LOCKS__
-	  sem_post(&hash_table->row_lock[hash_key]);
+    sem_post(&hash_table->row_lock[hash_key]);
 #endif
-	  return(ptr->data);
-	}
+    return(ptr->data);
+  }
       ptr = ptr->next;
     }
 #ifdef __USE_HASH_LOCKS__  
@@ -272,21 +276,21 @@ static inline void destroy_hash_table( hash_table_t *hash_table)
       sem_wait(&hash_table->row_lock[t]);
 #endif
       if (hash_table->row[t] != NULL)
-	{
-	  cur_ptr = hash_table->row[t];
-	  count = 1;
-	  while (cur_ptr != NULL)
-	    {
-	      free(cur_ptr->key);
-	      tmp_ptr = cur_ptr->next;
-	      free(cur_ptr);
-	      cur_ptr = tmp_ptr;
-	      count++;
-	    }
-	  hash_table->row[t] = NULL;
-	  tot_count += count;
-	  if (count > max_count) max_count = count;
-	}
+  {
+    cur_ptr = hash_table->row[t];
+    count = 1;
+    while (cur_ptr != NULL)
+      {
+        free(cur_ptr->key);
+        tmp_ptr = cur_ptr->next;
+        free(cur_ptr);
+        cur_ptr = tmp_ptr;
+        count++;
+      }
+    hash_table->row[t] = NULL;
+    tot_count += count;
+    if (count > max_count) max_count = count;
+  }
 #ifdef __USE_HASH_LOCKS__
       sem_post(&hash_table->row_lock[t]);
 #endif
