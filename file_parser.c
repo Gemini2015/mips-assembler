@@ -372,7 +372,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 3; i++) {
-									reg_store[i] = (char*)malloc(2 * sizeof(char));
+									reg_store[i] = (char*)malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -436,7 +436,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 2; i++) {
-									reg_store[i] = (char*)malloc(2 * sizeof(char));
+									reg_store[i] = (char*)malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -512,7 +512,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 3; i++) {
-									reg_store[i] =(char*) malloc(2 * sizeof(char));
+									reg_store[i] =(char*) malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -562,7 +562,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 3; i++) {
-									reg_store[i] =(char*) malloc(2 * sizeof(char));
+									reg_store[i] =(char*) malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -661,7 +661,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 2; i++) {
-									reg_store[i] =(char*) malloc(2 * sizeof(char));
+									reg_store[i] =(char*) malloc(20 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -722,7 +722,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 										break;
 								}
 
-								char *new_label =(char*)malloc((str_len_count+1)*sizeof(char)); //new char[str_len_count+1];
+								char *new_label =(char*)malloc((str_len_count+1)*sizeof(char));
 								for (i = 0; i < str_len_count; i++)
 									new_label[i] = inst_ptr[i];
 								new_label[str_len_count] = '\0';
