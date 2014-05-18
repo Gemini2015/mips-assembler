@@ -3,6 +3,9 @@
  *
  *  Created on: Oct 3, 2011
  *      Author: nayef
+ *
+ *	Modified: 2014-5-18
+ *		Author: Chris Cheng
  */
 
 #include "hash_table.h"
@@ -16,8 +19,11 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 int binarySearch(char *instructions[], int low, int high, char *string);
 char instruction_type(char *instruction);
 char *register_address(char *registerName);
+void rtype_parse(char *token, char *tok_ptr, FILE *Out);
 void rtype_instruction(char *instruction, char *rs, char *rt, char *rd, int shamt, FILE *Out);
+void itype_parse(char *token, char *tok_ptr, hash_table_t *hash_table, int32_t instruction_count, FILE *Out);
 void itype_instruction(char *instruction, char *rs, char *rt, int immediate, FILE *Out);
+void jtype_parse(char *token, char *tok_ptr, hash_table_t *hash_table, FILE *Out);
 void jtype_instruction(char *instruction, int immediate, FILE *Out);
 void word_rep(int binary_rep, FILE *Out);
 void ascii_rep(char string[], FILE *Out);

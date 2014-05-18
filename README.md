@@ -3,13 +3,11 @@ Mips Assembler
 
 An assembler for a subset of the MIPS instruction set that I wrote in 2011.
 
-# 迁移到Windows平台
+迁移到Windows平台
 Chris Cheng
 2014-5-18
 
-## 编译
-==============
-
+编译
 ### 普通编译:
 1. 在VC 6.0新建工程
 2. 将 .cpp 和 .h 文件加入到工程里面
