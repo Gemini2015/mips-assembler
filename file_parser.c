@@ -19,32 +19,32 @@ struct {
 	const char *name;
 	char *address;
 } registerMap[] = {
-		{ "zero", "00000" },
-		{ "at", "00001" },
-		{ "v0", "00010" },
-		{ "v1", "00011" },
-		{ "a0", "00100" },
-		{ "a1", "00101" },
-		{ "a2", "00110" },
-		{ "a3", "00111" },
-		{ "t0", "01000" },
-		{ "t1", "01001" },
-		{ "t2", "01010" },
-		{ "t3", "01011" },
-		{ "t4", "01100" },
-		{ "t5", "01101" },
-		{ "t6", "01110" },
-		{ "t7", "01111" },
-		{ "s0", "10000" },
-		{ "s1", "10001" },
-		{ "s2", "10010" },
-		{ "s3", "10011" },
-		{ "s4", "10100" },
-		{ "s5", "10101" },
-		{ "s6", "10110" },
-		{ "s7", "10111" },
-		{ "t8", "11000" },
-		{ "t9", "11001" },
+		{ "0", "00000" },
+		{ "1", "00001" },
+		{ "2", "00010" },
+		{ "3", "00011" },
+		{ "4", "00100" },
+		{ "5", "00101" },
+		{ "6", "00110" },
+		{ "7", "00111" },
+		{ "8", "01000" },
+		{ "9", "01001" },
+		{ "10", "01010" },
+		{ "11", "01011" },
+		{ "12", "01100" },
+		{ "13", "01101" },
+		{ "14", "01110" },
+		{ "15", "01111" },
+		{ "16", "10000" },
+		{ "17", "10001" },
+		{ "18", "10010" },
+		{ "19", "10011" },
+		{ "20", "10100" },
+		{ "21", "10101" },
+		{ "22", "10110" },
+		{ "23", "10111" },
+		{ "24", "11000" },
+		{ "25", "11001" },
 		{ NULL, 0 } };
 
 // Struct for R-Type instructions mapping for the 'function' field in the instruction
@@ -53,7 +53,7 @@ struct {
 	char *function;
 } rMap[] = {
 		{ "add", "100000" },
-		{ "sub", "100001" },
+		{ "sub", "100010" },
 		{ "and", "100100" },
 		{ "or",  "100101" },
 		{ "sll", "000000" },
@@ -108,12 +108,21 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 		line[MAX_LINE_LENGTH] = 0;
 
 		tok_ptr = line;
-		if (strlen(line) == MAX_LINE_LENGTH) {
+		if (strlen(line) == MAX_LINE_LENGTH -1) {
 			fprintf(Out,
 					"line %d: line is too long. ignoring line ...\n", line_num);
 			line_num++;
 			continue;
 		}
+
+		//手动增加 \n 符。
+		i = strlen(line);
+		if(line[i-1] != '\n')
+		{
+			line[i] = '\n';
+			line[i+1] = '\0';
+		}
+		
 
 		/* parse the tokens within a line */
 		while (1) {
@@ -151,7 +160,9 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 			printf("PC Count: %d\n", instruction_count);
 
 			// If first pass, then add labels to hash table
-			if (pass == 1) {
+			// 第一遍扫描，检查 标签、数据段变量定义
+			if (pass == 1)
+			{
 
 				printf("First pass\n");
 
@@ -280,7 +291,9 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 			}
 
 			// If second pass, then interpret
-			else if (pass == 2) {
+			// 第2遍扫描翻译语句
+			else if (pass == 2) 
+			{
 
 				printf("############    Pass 2   ##############\n");
 
@@ -291,6 +304,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 				if (data_reached == 0) {
 
 					// Check instruction type
+					//检查是否是已支持的指令
 					int instruction_supported = search(token);
 					char inst_type;
 
@@ -310,7 +324,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 									|| strcmp(token, "and") == 0
 									|| strcmp(token, "or") == 0 || strcmp(token, "slt") == 0) {
 
-								// Parse the instructio - get rd, rs, rt registers
+								// Parse the instruction - get rd, rs, rt registers
 								char *inst_ptr = tok_ptr;
 								char *reg = NULL;
 
@@ -661,7 +675,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								}
 
 								for (i = 0; i < 2; i++) {
-									reg_store[i] =(char*) malloc(20 * sizeof(char));
+									reg_store[i] =(char*) malloc(2 * sizeof(char));
 									if (reg_store[i] == NULL) {
 										fprintf(Out, "Out of memory\n");
 										exit(1);
@@ -691,7 +705,8 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 								// Find hash address for a register and put in an immediate
 								int *address =(int*) hash_find(hash_table, reg, strlen(reg)+1);
 								
-								int immediate = *address + instruction_count;
+								// beq跳转地址有问题
+								int immediate = (*address - instruction_count) >> 2;
 
 								// Send instruction to itype function
 								itype_instruction(token, reg_store[0], reg_store[1], immediate, Out);
@@ -711,6 +726,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 							char *inst_ptr = tok_ptr;
 
 							// If comment, extract the label alone
+							// 跳转到指定地址 j #1000
 							char *comment = strchr(inst_ptr, '#');
 							if (comment != NULL) {							
 
@@ -722,7 +738,7 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 										break;
 								}
 
-								char *new_label =(char*)malloc((str_len_count+1)*sizeof(char));
+								char *new_label =new char[str_len_count+1];
 								for (i = 0; i < str_len_count; i++)
 									new_label[i] = inst_ptr[i];
 								new_label[str_len_count] = '\0';
@@ -737,13 +753,18 @@ void parse_file(FILE *fptr, int pass, char *instructions[], size_t inst_len, has
 							// Find hash address for a label and put in an immediate
 							int *address =(int*) hash_find(hash_table, inst_ptr, strlen(inst_ptr)+1);
 							
+							//j loop
+							// PC = JumpAddr
+							// JumpAddr = { (next Inst PC)[31:28], address, 2'b0}
+							*address = *address >> 2;
+
 							// Send to jtype function
 							jtype_instruction(token, *address, Out);
 						}
 					}
 
 					if (strcmp(token, "nop") == 0) {
-						fprintf(Out, "00000000000000000000000000000000\n");
+						fprintf(Out, "00000000000000000000000000000000,\n");
 					}
 				}
 
@@ -915,7 +936,7 @@ void rtype_instruction(char *instruction, char *rs, char *rt, char *rd, int sham
 	}
 
 	// Print out the instruction to the file
-	fprintf(Out, "%s%s%s%s%s%s\n", opcode, rsBin, rtBin, rdBin, shamtBin, func);
+	fprintf(Out, "%s%s%s%s%s%s,\n", opcode, rsBin, rtBin, rdBin, shamtBin, func);
 }
 
 // Write out the I-Type instruction
@@ -944,7 +965,7 @@ void itype_instruction(char *instruction, char *rs, char *rt, int immediateNum, 
 	getBin(immediateNum, immediate, 16);
 
 	// Print out the instruction to the file
-	fprintf(Out, "%s%s%s%s\n", opcode, rsBin, rtBin, immediate);
+	fprintf(Out, "%s%s%s%s,\n", opcode, rsBin, rtBin, immediate);
 }
 
 // Write out the J-Type instruction
@@ -966,7 +987,7 @@ void jtype_instruction(char *instruction, int immediate, FILE *Out) {
 	getBin(immediate, immediateStr, 26);
 
 	// Print out instruction to file
-	fprintf(Out, "%s%s\n", opcode, immediateStr);
+	fprintf(Out, "%s%s,\n", opcode, immediateStr);
 }
 
 // Write out the variable in binary
