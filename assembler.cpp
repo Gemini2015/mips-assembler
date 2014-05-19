@@ -106,10 +106,20 @@ int main (int argc, char *argv[]) {
 		printf("Output file could not opened.");
 		exit(1);
 	}
+	
+	getchar();
+	RADIX = 2;
+	printf("input Radix 2 or 16 (default 2:Binary): ");
+	gets(in);
+	int radix = atoi(in);
+	if(radix == 16)
+	{
+		RADIX = radix;
+	}
 
 	// ISE Coe file header
 	// Radix = 2
-	fprintf(Out,"MEMORY_INITIALIZATION_RADIX = 2;\n");
+	fprintf(Out,"MEMORY_INITIALIZATION_RADIX = %d;\n", RADIX);
 	fprintf(Out,"MEMORY_INITIALIZATION_VECTOR=\n");
 
 	// Sort the array using qsort for faster search
@@ -129,7 +139,8 @@ int main (int argc, char *argv[]) {
 	parse_file(In, passNumber, instructions, inst_len, hash_table, Out);
 
 	// ISE Coe file foot
-	for(int i = 0; i < 32; i++)
+	int len = RADIX == 2 ? 32 : 8;
+	for(int i = 0; i < len; i++)
 	{
 		fprintf(Out,"0");
 	}
